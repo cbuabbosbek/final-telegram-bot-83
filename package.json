@@ -21,6 +21,7 @@
   "homepage": "https://github.com/cbuabbosbek/final-telegram-bot-83#readme",
   "dependencies": {
     "dotenv": "^17.2.3",
+    "mongoose": "^9.0.0",
     "node-telegram-bot-api": "^0.66.0"
   },
   "devDependencies": {
