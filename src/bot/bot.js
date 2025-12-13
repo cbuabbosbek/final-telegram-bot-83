@@ -3,6 +3,7 @@ import { config } from "dotenv";
 import onStart from "./handlers/onStart.js";
 import onProfile from "./handlers/onProfile.js";
 import onError from "./handlers/onError.js";
+import onCourses from "./handlers/onCourses.js";
 config();
 
 export const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
@@ -73,6 +74,10 @@ bot.on("message", async (msg) => {
     return onProfile(msg);
   }
 
+  if (text == "📚 Kurslar") {
+    return onCourses(msg);
+  }
+
   return onError(msg);
 });
 
@@ -96,6 +101,18 @@ bot.on("callback_query", async (query) => {
       bot.deleteMessage(chatId, msg.message_id);
       return onStart(msg);
     }
+  }
+
+  if (data == "course_english") {
+    bot.sendMessage(chatId, `Enlish course is selected`, {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: `Ro'yhatdan o'tish`, callback_data: "register:english" }],
+        ],
+      },
+    });
+
+    bot.deleteMessage(chatId, msg.message_id);
   }
 });
 
