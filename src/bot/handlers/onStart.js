@@ -1,8 +1,30 @@
+import User from "../../models/User.js";
 import { bot } from "../bot.js";
 
-function onStart(msg) {
+const onStart = async (msg) => {
   const chatId = msg.chat.id;
   const firstname = msg.chat.first_name;
+  const username = msg.chat.username;
+
+  let user = await User.findOne({ chatId: chatId });
+
+  console.log(user);
+
+  if (!user) {
+    user = await new User({
+      chatId: chatId,
+      firstname: firstname,
+      username: username,
+      action: "start",
+    });
+
+    user.save();
+  } else {
+    user = await User.findOneAndUpdate(
+      { chatId: chatId },
+      { firstname: firstname, username: username, action: "start" }
+    );
+  }
 
   bot.sendMessage(
     chatId,
@@ -30,6 +52,6 @@ Quyidagi menyudan kerakli bo‘limni tanlang 👇
       },
     }
   );
-}
+};
 
 export default onStart;

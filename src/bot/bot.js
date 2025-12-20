@@ -4,6 +4,8 @@ import onStart from "./handlers/onStart.js";
 import onProfile from "./handlers/onProfile.js";
 import onError from "./handlers/onError.js";
 import onCourses from "./handlers/onCourses.js";
+import User from "../models/User.js";
+import onRegister from "./handlers/onRegister.js";
 config();
 
 export const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
@@ -29,6 +31,8 @@ bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
   const firstname = msg.chat.first_name;
   const text = msg.text;
+
+  let user = await User.findOne({ chatId });
 
   // status
   // creator - yaratuvchi
@@ -78,6 +82,40 @@ bot.on("message", async (msg) => {
     return onCourses(msg);
   }
 
+  if (text == "✍️ Ro‘yxatdan o‘tish") {
+    return onRegister(msg);
+  }
+
+  if (user.action == "awaiting_name") {
+    user = await User.findOneAndUpdate(
+      { chatId },
+      {
+        name: text,
+        action: "awaiting_phone",
+      }
+    );
+
+    return bot.sendMessage(chatId, `Telefon Raqamizni kiriting`);
+  }
+
+  if (user.action == "awaiting_phone") {
+    user = await User.findOneAndUpdate(
+      { chatId },
+      {
+        phone: text,
+        action: "finish_registration",
+      }
+    );
+
+
+    bot.sendMessage(chatId, `Tabriklaymiz, siz ro'yhatdan o'tdingiz 🎉`)
+
+    return bot.sendMessage(875072364, `🔔 Yangi Xabar:\n🔘FIO; ${user.name}\n🔘Telefon: ${text}`)
+
+
+  }
+  
+  
   return onError(msg);
 });
 
@@ -90,6 +128,15 @@ bot.on("callback_query", async (query) => {
   const firstname = msg.chat.first_name;
 
   if (data == "confirm_subscribtion") {
+    let user = await User.findOne({ chatId });
+
+    if (!user) return;
+
+    user = await User.findOneAndUpdate(
+      { chatId },
+      { action: "confirm_subscribtion" }
+    );
+
     console.log("TUGMA BOSILDIII");
     const user_subscribed = await checkIfUserSubscribed(chatId);
 
@@ -104,6 +151,15 @@ bot.on("callback_query", async (query) => {
   }
 
   if (data == "course_english") {
+    let user = await User.findOne({ chatId });
+
+    if (!user) return;
+
+    user = await User.findOneAndUpdate(
+      { chatId },
+      { action: "course_english" }
+    );
+
     bot.sendMessage(chatId, `Enlish course is selected`, {
       reply_markup: {
         inline_keyboard: [
